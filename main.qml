@@ -17,7 +17,7 @@ PainterPlugin
     property bool projectOpen: alg.project.isOpen()
 
     onProjectOpenChanged: {
-      //resetTimerState()
+      resetTimerState()
     }
 
     function reinitRemainingTime_exportTexture(){
@@ -55,7 +55,7 @@ PainterPlugin
     function parseUnityMatFile(unityMatFile){
       function getColorVal(str){return Number(str.split(":")[1])}
       var out = {m_ShaderKeywords :{}, m_Floats: {}, m_Colors: {}}
-      alg.log.info("parseUnityMatFile:"+ unityMatFile)
+      //alg.log.info("parseUnityMatFile:"+ unityMatFile)
       try{
         var file = alg.fileIO.open(unityMatFile, "r")
         var step = 0
@@ -175,13 +175,12 @@ PainterPlugin
       alg.log.info("countKeyword=" + countKeyword + " countBool=" + countBool + " countFloat" + countFloat + " countFloat4" + countFloat4)
     }
     function syncShaderParamFromUnity(){
-      alg.log.info("syncShaderParamFromUnity")
       var projectName = alg.project.name()
       var exportPath = internal.unityPorjectDirectory + "Assets/Res/character/"  + projectName + "/materials/"
 
       alg.shaders.instances().forEach(function(shader) {
         if(shader.shader == "DH-Toon"){
-        //if(shader.label == "face"){
+           //if(shader.label == "face"){
            //alg.log.info(shader.label + ": " + shader.id + ":" + shader.shader + ":" + shader.url);
            syncOneShader(shader, exportPath + projectName)
         }
@@ -194,7 +193,6 @@ PainterPlugin
     repeat: true
     interval: 100
     onTriggered: {
-      return
       if(internal.projectOpen){
         if (internal.remainingTime_exportTexture > 0) {
           --internal.remainingTime_exportTexture;
@@ -232,8 +230,6 @@ PainterPlugin
       }
       internal.spexpFilePath = unityPorjectDirectory + "tools/substance_painter/DH-Toon.spexp"
       internal.resetTimerState()
-
-      internal.syncShaderParamFromUnity()
     }
   }
 }
