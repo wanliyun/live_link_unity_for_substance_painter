@@ -7,6 +7,7 @@ PainterPlugin
   QtObject {
     id: internal
     property string unityAssetsRootDirectory : ""
+    property string spexpFilePath : ""
     property int intervalTime_exportTexture : 0
     property int remainingTime_exportTexture : -1
 
@@ -40,7 +41,15 @@ PainterPlugin
     }
     
     function exportTexture() {
-      alg.log.info("exportTexture");
+      var projectName = alg.project.name()
+      var exportPath = internal.unityAssetsRootDirectory + "Res/character/"  + projectName + "/materials/" 
+      alg.log.info("exportTexture:"+ exportPath)
+      var info = alg.mapexport.exportDocumentMaps(
+       "DH-Toon",
+       exportPath,
+       "tga"
+      )
+      alg.log.info(info)
     }
 
     function syncShaderParamFromUnity(){
@@ -83,6 +92,7 @@ PainterPlugin
       internal.intervalTime_exportTexture = exportTextureInterval
       internal.intervalTime_syncShaderParamFromUnity = syncShaderParamFromUnityInterval
       internal.unityAssetsRootDirectory = unityAssetsRootDirectory
+      internal.spexpFilePath = unityAssetsRootDirectory + "Res/character/sp/DH-Toon.spexp"
       alg.log.info("intervalTime_exportTexture = " + internal.intervalTime_exportTexture)
       alg.log.info("intervalTime_syncShaderParamFromUnity = " + internal.intervalTime_syncShaderParamFromUnity)
       alg.log.info("unityAssetsRootDirectory = " + internal.unityAssetsRootDirectory)

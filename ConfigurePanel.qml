@@ -67,18 +67,17 @@ AlgDialog
         newModelComponent(
           "Auto Export Texture interval in seconds:",
           0,
-          syncShaderParamFromUnityIntervalMax,
-          syncShaderParamFromUnityIntervalDefault,
-          syncShaderParamFromUnityIntervalKey)
+          exportTextureIntervalMax,
+          exportTextureIntervalDefault,
+          exportTextureIntervalKey)
         )
-
       model.append(
         newModelComponent(
           "Autoupdate Sync Shader Params From Unity in seconds:",
           0,
-          exportTextureIntervalMax,
-          exportTextureIntervalDefault,
-          exportTextureIntervalKey)
+          syncShaderParamFromUnityIntervalMax,
+          syncShaderParamFromUnityIntervalDefault,
+          syncShaderParamFromUnityIntervalKey)
         )
     }
     function reinitSettings() {
@@ -132,7 +131,7 @@ AlgDialog
           enabled: true
           Layout.fillWidth: true
           onFullPathChanged: {
-            internal.updateSettings(internal.unityAssetsRootDirectory, fullPath)
+            internal.updateSettings(internal.unityAssetsRootDirectoryKey, fullPath)
             fileDialog.folder = fullPath
           }
           TextMetrics {
