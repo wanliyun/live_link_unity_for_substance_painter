@@ -91,7 +91,6 @@ AlgDialog
     }
 
     function emit() {
-      alg.log.info("emit")
       alg.settings.setValue(exportTextureIntervalKey, settings[exportTextureIntervalKey])
       alg.settings.setValue(syncShaderParamFromUnityIntervalKey, settings[syncShaderParamFromUnityIntervalKey])
       alg.settings.setValue(unityPorjectDirectoryKey, settings[unityPorjectDirectoryKey])
