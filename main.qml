@@ -6,7 +6,7 @@ PainterPlugin
 {
   QtObject {
     id: internal
-    property string unityAssetsRootDirectory : ""
+    property string unityPorjectDirectory : ""
     property string spexpFilePath : ""
     property int intervalTime_exportTexture : 0
     property int remainingTime_exportTexture : -1
@@ -39,13 +39,13 @@ PainterPlugin
         timer.restart()
       }        
     }
-    
+ 
     function exportTexture() {
       var projectName = alg.project.name()
-      var exportPath = internal.unityAssetsRootDirectory + "Res/character/"  + projectName + "/materials/" 
+      var exportPath = internal.unityPorjectDirectory + "Assets/Res/character/"  + projectName + "/materials/" 
       alg.log.info("exportTexture:"+ exportPath)
       var info = alg.mapexport.exportDocumentMaps(
-       "DH-Toon",
+       internal.spexpFilePath,
        exportPath,
        "tga"
       )
@@ -91,11 +91,16 @@ PainterPlugin
     onConfigurationChanged: {
       internal.intervalTime_exportTexture = exportTextureInterval
       internal.intervalTime_syncShaderParamFromUnity = syncShaderParamFromUnityInterval
-      internal.unityAssetsRootDirectory = unityAssetsRootDirectory
-      internal.spexpFilePath = unityAssetsRootDirectory + "Res/character/sp/DH-Toon.spexp"
-      alg.log.info("intervalTime_exportTexture = " + internal.intervalTime_exportTexture)
-      alg.log.info("intervalTime_syncShaderParamFromUnity = " + internal.intervalTime_syncShaderParamFromUnity)
-      alg.log.info("unityAssetsRootDirectory = " + internal.unityAssetsRootDirectory)
+      internal.unityPorjectDirectory = unityPorjectDirectory
+      if(!alg.fileIO.isDir(internal.unityPorjectDirectory))
+      {
+        internal.intervalTime_exportTexture = 0
+        internal.intervalTime_syncShaderParamFromUnity = 0
+      }
+      internal.spexpFilePath = unityPorjectDirectory + "tools/substance_painter/DH-Toon.spexp"
+      alg.log.info("intervalTime_exportTexture=" + internal.intervalTime_exportTexture)
+      alg.log.info("intervalTime_syncShaderParamFromUnity=" + internal.intervalTime_syncShaderParamFromUnity)
+      alg.log.info("unityPorjectDirectory=" + internal.unityPorjectDirectory)
       internal.resetTimerState()
     }
   }

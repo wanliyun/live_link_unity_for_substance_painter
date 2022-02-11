@@ -21,7 +21,7 @@ AlgDialog
   signal configurationChanged(
     int exportTextureInterval,
     int syncShaderParamFromUnityInterval,
-    string unityAssetsRootDirectory)
+    string unityPorjectDirectory)
 
   onVisibleChanged: {
     if (visible) internal.initModel()
@@ -45,8 +45,8 @@ AlgDialog
     readonly property int syncShaderParamFromUnityIntervalDefault:          0
     readonly property int syncShaderParamFromUnityIntervalMax:              120
 
-    readonly property string unityAssetsRootDirectoryKey:      "unityAssetsRootDirectory"
-    readonly property string unityAssetsRootDirectoryDefault:  alg.documents_directory + "autosave/"
+    readonly property string unityPorjectDirectoryKey:      "unityPorjectDirectory"
+    readonly property string unityPorjectDirectoryDefault:  ""
 
     property var settings: ({})
 
@@ -83,23 +83,22 @@ AlgDialog
     function reinitSettings() {
       updateSettings(exportTextureIntervalKey, alg.settings.value(exportTextureIntervalKey, exportTextureIntervalDefault))
       updateSettings(syncShaderParamFromUnityIntervalKey, alg.settings.value(syncShaderParamFromUnityIntervalKey, syncShaderParamFromUnityIntervalDefault))
-      updateSettings(unityAssetsRootDirectoryKey, alg.settings.value(unityAssetsRootDirectoryKey, unityAssetsRootDirectoryDefault))
+      updateSettings(unityPorjectDirectoryKey, alg.settings.value(unityPorjectDirectoryKey, unityPorjectDirectoryDefault))
     }
 
     function updateSettings(settings_name, value) {
       settings[settings_name] = value
-      alg.settings.value(settings_name, value)
     }
 
     function emit() {
       alg.log.info("emit")
       alg.settings.setValue(exportTextureIntervalKey, settings[exportTextureIntervalKey])
       alg.settings.setValue(syncShaderParamFromUnityIntervalKey, settings[syncShaderParamFromUnityIntervalKey])
-      alg.settings.setValue(unityAssetsRootDirectoryKey, settings[unityAssetsRootDirectoryKey])
+      alg.settings.setValue(unityPorjectDirectoryKey, settings[unityPorjectDirectoryKey])
       configurationChanged(
         settings[exportTextureIntervalKey],
         settings[syncShaderParamFromUnityIntervalKey],
-        settings[unityAssetsRootDirectoryKey],
+        settings[unityPorjectDirectoryKey],
         )
     }
   }
@@ -126,12 +125,12 @@ AlgDialog
           text: elideDelegate.elidedText
           selectByKeyboard: false
           selectByMouse: false
-          property string fullPath: alg.settings.value(internal.unityAssetsRootDirectory, internal.unityAssetsRootDirectoryDefault)
+          property string fullPath: alg.settings.value(internal.unityPorjectDirectoryKey, internal.unityPorjectDirectoryDefault)
           readOnly: true
           enabled: true
           Layout.fillWidth: true
           onFullPathChanged: {
-            internal.updateSettings(internal.unityAssetsRootDirectoryKey, fullPath)
+            internal.updateSettings(internal.unityPorjectDirectoryKey, fullPath)
             fileDialog.folder = fullPath
           }
           TextMetrics {
@@ -174,7 +173,7 @@ AlgDialog
   FileDialog {
     id: fileDialog
     title: "Please choose Unity Assets Root directory"
-    folder: internal.unityAssetsRootDirectoryDefault
+    folder: internal.unityPorjectDirectoryDefault
     selectFolder: true
     selectMultiple: false
     selectExisting: true
