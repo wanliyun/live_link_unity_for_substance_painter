@@ -120,6 +120,7 @@ PainterPlugin
     }
 
     function syncOneShader(shader, unityMatPathPrefix){
+      //if(shader.label != "face") return;
       var unityMatPath = unityMatPathPrefix + "_" + shader.label + ".mat"
       var unityParams = parseUnityMatFile(unityMatPath)
       if(unityParams == null){
@@ -129,59 +130,94 @@ PainterPlugin
       //alg.log.info(unityParams)
       var shaderId = shader.id
       var params = alg.shaders.parameters(shaderId)
-      //alg.log.info(params)
+      var paramNames = []
+      for(var paramName in params){ 
+        paramNames.push(paramName)
+      } 
+      //alg.log.error(paramNames)
 
       var countKeyword = 0
       var countBool = 0
       var countFloat = 0
       var countFloat4 = 0
-      for(var paramName in params){
-        var shaderParamObj = params[paramName]
+      var setParams = {}
+      for(var idx in paramNames){
+        var paramName = paramNames[idx]
+        var shaderParamObj = alg.shaders.parameter(shaderId, paramName)
+        if(shaderParamObj == null){
+          alg.log.error("ERR:syncOneShader @"+ paramName + "@" + shader.label)
+          return
+        }
+        //return
         var desc = shaderParamObj.description
         var dataType = desc.dataType
-        var unityName = desc.label
+        //alg.log.info("dataType of " + paramName + "=" + dataType)
         if(desc.group == "ShaderKeywords"){
           var st = unityParams.m_ShaderKeywords
-          shaderParamObj.value = st.hasOwnProperty(unityName)
-          ++countKeyword
-          //alg.log.info("set KeyWords: " + unityName + "=" +  shaderParamObj.value)
+          var newVal = st.hasOwnProperty(paramName)
+          if(newVal != shaderParamObj.value){
+            shaderParamObj.value = newVal
+            ++countKeyword
+            alg.log.info("set KeyWords: " + paramName + "=" +  shaderParamObj.value)
+          }
         }
         else{
+          function abs(a) { return a>= 0 ? a :  a }
+          function fequal(a, b){return abs(a-b) < 0.0000001}
           if(dataType == "Bool"){
             var st = unityParams.m_Floats
-            if(st.hasOwnProperty(unityName)){
-              shaderParamObj.value = st[unityName] != 0
-              ++countBool
-              //alg.log.info("set Bool:" + unityName + "=" +  shaderParamObj.value)
+            if(st.hasOwnProperty(paramName)){
+              var newVal = !fequal(st[paramName], 0)
+              if(shaderParamObj.value != newVal){
+                shaderParamObj.value = newVal
+                ++countBool
+                alg.log.info("set Bool:" + paramName + "=" +  shaderParamObj.value)
+              }
+            }
+            else{
+              //alg.log.info("no param in Unity:" + paramName)
             }
           }else if(dataType == "Float"){
             var st = unityParams.m_Floats
-            if(st.hasOwnProperty(unityName)){
-              shaderParamObj.value = st[unityName]
-              ++countFloat
-              //alg.log.info("set Float:" + unityName + "=" +  shaderParamObj.value)
+            if(st.hasOwnProperty(paramName)){
+              var newVal = st[paramName]
+              if(!fequal(shaderParamObj.value, newVal)){
+                shaderParamObj.value = newVal
+                ++countFloat
+                alg.log.info("set Float:" + paramName + "=" +  shaderParamObj.value)
+              }else{
+                //alg.log.info("no param in Unity:" + paramName)
+              }
             }
           }else if(dataType == "Float4"){
             var st = unityParams.m_Colors
-            if(st.hasOwnProperty(unityName)){
-              shaderParamObj.value = st[unityName]
-              ++countFloat4
-              //alg.log.info("set Float:" + unityName + "=" +  shaderParamObj.value)
+            if(st.hasOwnProperty(paramName)){
+              try{
+                var newVal = st[paramName]
+                var oldVal = shaderParamObj.value
+                if(newVal.length != 4 || !fequal( newVal[0], oldVal[0]) || !fequal(newVal[1],oldVal[1]) || !fequal(newVal[2],oldVal[2]) || !fequal(newVal[3],oldVal[3])){
+                  shaderParamObj.value = newVal
+                  ++countFloat4
+                  alg.log.info("set Float4:" + paramName + "=" +  shaderParamObj.value)
+                }
+              }catch(e){
+                alg.log.info({oldVal:oldVal, newVal:newVal})
+              }
             }
           }
         }
       }
-      alg.log.info("Sync Param of " + shader.label + " from:" + unityMatPath)
-      alg.log.info("countKeyword=" + countKeyword + " countBool=" + countBool + " countFloat" + countFloat + " countFloat4" + countFloat4)
+      if(countKeyword > 0 || countBool > 0 || countFloat > 0 || countFloat4 > 0){
+        alg.log.info("Sync " + shader.label + " from:" + unityMatPath+ "|K:" + countKeyword+ "|B:" + countBool+ "|F:" + countFloat + "|F4:" + countFloat4)
+      }
     }
     function syncShaderParamFromUnity(){
+      alg.log.info("syncShaderParamFromUnity")
       var projectName = alg.project.name()
       var exportPath = internal.unityPorjectDirectory + "Assets/Res/character/"  + projectName + "/materials/"
 
       alg.shaders.instances().forEach(function(shader) {
         if(shader.shader == "DH-Toon"){
-           //if(shader.label == "face"){
-           //alg.log.info(shader.label + ": " + shader.id + ":" + shader.shader + ":" + shader.url);
            syncOneShader(shader, exportPath + projectName)
         }
       });
