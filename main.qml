@@ -162,7 +162,7 @@ PainterPlugin
           }
         }
         else{
-          function abs(a) { return a>= 0 ? a :  a }
+          function abs(a) { return a >= 0 ? a :  0-a }
           function fequal(a, b){return abs(a-b) < 0.0000001}
           if(dataType == "Bool"){
             var st = unityParams.m_Floats
