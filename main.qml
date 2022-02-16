@@ -119,7 +119,13 @@ PainterPlugin
       return out
     }
 
-    function syncOneShader(shader, unityMatPathPrefix){
+    function mergeSetting(matParam, globalParam){
+      for(var paramName in globalParam.m_Floats)
+        matParam.m_Floats[paramName] = globalParam.m_Floats[paramName]
+      for(var paramName in globalParam.m_Colors)
+        matParam.m_Colors[paramName] = globalParam.m_Colors[paramName]
+    }
+    function syncOneShader(charSetting, shader, unityMatPathPrefix){
       //if(shader.label != "face") return;
       var unityMatPath = unityMatPathPrefix + "_" + shader.label + ".mat"
       var unityParams = parseUnityMatFile(unityMatPath)
@@ -127,7 +133,10 @@ PainterPlugin
         alg.log.error("Failed to parse Unity mat file")
         return;
       }
-      //alg.log.info(unityParams)
+      //alg.log.info( unityParams)
+      mergeSetting(unityParams, charSetting)
+      //alg.log.info( unityParams)
+      
       var shaderId = shader.id
       var params = alg.shaders.parameters(shaderId)
       var paramNames = []
@@ -155,6 +164,7 @@ PainterPlugin
         if(desc.group == "ShaderKeywords"){
           var st = unityParams.m_ShaderKeywords
           var newVal = st.hasOwnProperty(paramName)
+          //alg.log.info("ShaderKeywords of " + paramName + "=" + newVal + " old value=" + shaderParamObj.value)
           if(newVal != shaderParamObj.value){
             shaderParamObj.value = newVal
             ++countKeyword
@@ -211,14 +221,78 @@ PainterPlugin
         alg.log.info("Sync " + shader.label + " from:" + unityMatPath+ "|K:" + countKeyword+ "|B:" + countBool+ "|F:" + countFloat + "|F4:" + countFloat4)
       }
     }
+
+    function getUnityCharacterSetttings(){
+      var out = {m_Floats: {}, m_Colors: {}}
+      var signalFile = internal.unityPorjectDirectory + "Temp/_character_render_setting_signal.txt"
+      try{
+        var fSignal = alg.fileIO.open(signalFile, "w")
+        var date = new Date();
+        fSignal.write(date.toLocaleString())
+        fSignal.close()
+      }catch(e)
+      {
+        alg.log.error("Exception:getUnityCharacterSetttings" + e)
+        return out
+      }
+      var settingFile = internal.unityPorjectDirectory + "Temp/_character_render_setting.txt"
+      if(!alg.fileIO.isFile(settingFile))
+      {
+        alg.log.info("no file :" + settingFile );
+        return out
+      }
+      try{
+        var fSignal = alg.fileIO.open(settingFile, "r")
+        var step = 0
+        while(true)
+        {
+          var line = fSignal.readLine()
+          if(line == "") break
+          line = line.replace("\n", "").replace("\r", "")
+          switch(step)
+          {
+            case 0:{
+                if(line == "#Floats")
+                  step = 1
+              }break;
+            case 1:{
+                if(line == "#Vector4"){
+                  step = 2
+                }else{
+                  var kv = line.trim().split(":")
+                  var k = kv[0].trim()
+                  var v = Number(kv[1])
+                  out.m_Floats[k] = v
+                }
+              }
+              break;
+            case 2:{
+                var kv = line.trim().split(":")
+                var k = kv[0].trim()
+                var start = kv[1].indexOf("(")
+                var end = kv[1].indexOf(")")
+                var colors = kv[1].substring(start + 1, end - start).split(",")
+                out.m_Colors[k] = [Number(colors[0]),Number(colors[1]),Number(colors[2]),Number(colors[3]) ]
+              }
+            default:
+              break;
+          }
+        }
+      }catch(e){
+        alg.log.error("Exception2:getUnityCharacterSetttings" + e)
+      }
+      return out
+    }
+
     function syncShaderParamFromUnity(){
       alg.log.info("syncShaderParamFromUnity")
+      var charSetting = getUnityCharacterSetttings()
       var projectName = alg.project.name()
       var exportPath = internal.unityPorjectDirectory + "Assets/Res/character/"  + projectName + "/materials/"
 
       alg.shaders.instances().forEach(function(shader) {
         if(shader.shader == "DH-Toon"){
-           syncOneShader(shader, exportPath + projectName)
+           syncOneShader(charSetting, shader, exportPath + projectName)
         }
       });
     }
