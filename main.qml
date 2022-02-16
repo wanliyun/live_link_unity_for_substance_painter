@@ -136,6 +136,7 @@ PainterPlugin
       //alg.log.info( unityParams)
       mergeSetting(unityParams, charSetting)
       //alg.log.info( unityParams)
+      //alg.log.info( unityParams.m_Colors._FirstShadowMultColor)
       
       var shaderId = shader.id
       var params = alg.shaders.parameters(shaderId)
@@ -205,6 +206,13 @@ PainterPlugin
               try{
                 var newVal = st[paramName]
                 var oldVal = shaderParamObj.value
+                 //alg.log.info(shaderParamObj)
+                if(desc.widget == "Color")
+                {
+                  newVal[0] = Math.pow(newVal[0], 2.2)
+                  newVal[1] = Math.pow(newVal[1], 2.2)
+                  newVal[2] = Math.pow(newVal[2], 2.2)
+                }
                 if(newVal.length != 4 || !fequal( newVal[0], oldVal[0]) || !fequal(newVal[1],oldVal[1]) || !fequal(newVal[2],oldVal[2]) || !fequal(newVal[3],oldVal[3])){
                   shaderParamObj.value = newVal
                   ++countFloat4
